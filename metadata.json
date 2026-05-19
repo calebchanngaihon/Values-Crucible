@@ -1,0 +1,8 @@
+{
+  "name": "The Value Crucible",
+  "description": "A rigorous values-sort designed for deep personal reflection to identify core life values.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
