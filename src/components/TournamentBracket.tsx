@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ValueNode } from '../types';
 import { RotateCcw } from 'lucide-react';
+import { getPoleImageSrc } from '../constants';
 
 interface TournamentBracketProps {
   pair: [ValueNode, ValueNode];
@@ -43,19 +44,24 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
   };
 
   const handleSelect = (winnerId: string, loserId: string) => {
+    if (isProcessing) return;
     const now = Date.now();
     const duration = now - lastClickTime;
 
-    if (duration < 1500) {
+    if (duration < 1000) {
       setIsProcessing(true);
       setTimeout(() => {
         setIsProcessing(false);
         onSelect(winnerId, loserId);
         setLastClickTime(Date.now());
-      }, 600);
+      }, 400);
     } else {
-      onSelect(winnerId, loserId);
-      setLastClickTime(now);
+      setIsProcessing(true);
+      setTimeout(() => {
+        setIsProcessing(false);
+        onSelect(winnerId, loserId);
+        setLastClickTime(now);
+      }, 200); // Small feedback delay
     }
   };
 
@@ -65,7 +71,7 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
     holdTimerRef.current = setTimeout(() => {
       setHeldId(null);
       handleSelect(winnerId, loserId);
-    }, 800);
+    }, 600);
   };
 
   const handlePointerUpOrLeave = () => {
@@ -79,6 +85,19 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
   useEffect(() => {
      setLastClickTime(Date.now());
   }, [pair]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isProcessing || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      if (e.key === 'ArrowLeft') {
+        if (valA && valB) handleSelect(valA.id, valB.id);
+      } else if (e.key === 'ArrowRight') {
+        if (valA && valB) handleSelect(valB.id, valA.id);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [valA?.id, valB?.id, pair, isProcessing]);
 
   return (
     <div className="absolute inset-0 flex flex-col md:flex-row overflow-hidden bg-zinc-950">
@@ -138,8 +157,8 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
         {/* Card Image Background */}
         <div className="absolute inset-0 z-0 opacity-50 pointer-events-none transition-opacity group-hover:opacity-60">
             <img 
-              src={`https://picsum.photos/seed/${valA?.id || 'default_A'}/600/800`}
-              alt="" 
+              src={getPoleImageSrc(valA?.pole || 1)}
+              alt={valA?.label || ''} 
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-900/60 to-zinc-950/80" />
@@ -149,7 +168,7 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, ease: "linear" }}
+            transition={{ duration: 0.6, ease: "linear" }}
             style={{ originX: 0 }}
             className="absolute top-0 left-0 h-1.5 md:h-2 bg-blue-600 w-full z-10"
           />
@@ -216,8 +235,8 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
         {/* Card Image Background */}
         <div className="absolute inset-0 z-0 opacity-50 pointer-events-none transition-opacity group-hover:opacity-60">
             <img 
-              src={`https://picsum.photos/seed/${valB?.id || 'default_B'}/600/800`}
-              alt="" 
+              src={getPoleImageSrc(valB?.pole || 1)}
+              alt={valB?.label || ''} 
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-900/60 to-zinc-950/80" />
@@ -227,7 +246,7 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, ease: "linear" }}
+            transition={{ duration: 0.6, ease: "linear" }}
             style={{ originX: 0 }}
             className="absolute top-0 left-0 h-1.5 md:h-2 bg-blue-600 w-full z-10"
           />
@@ -257,21 +276,21 @@ export const TournamentBracket: React.FC<TournamentBracketProps> = ({
         </div>
       </motion.button>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
-        <div className="font-mono text-[9px] md:text-[10px] text-zinc-700 uppercase tracking-[0.2em] whitespace-nowrap">
+      <div className="absolute top-1/2 -translate-y-1/2 md:translate-y-0 md:top-auto md:bottom-10 bottom-auto left-1/2 -translate-x-1/2 flex flex-row md:flex-col items-center gap-4 z-40 bg-zinc-950/80 px-6 py-3 rounded-full backdrop-blur-md border border-zinc-800 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+        <div className="font-mono text-xs md:text-sm text-zinc-300 uppercase tracking-[0.2em] whitespace-nowrap font-bold">
           {index + 1} / {total}
         </div>
 
         <AnimatePresence>
           {canUndo && !isProcessing && (
              <motion.button
-               initial={{ opacity: 0, y: 5 }}
-               animate={{ opacity: 1, y: 0 }}
-               exit={{ opacity: 0, y: 5 }}
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.9 }}
                onClick={onUndo}
-               className="flex items-center gap-2 font-mono text-[9px] md:text-[10px] text-zinc-600 uppercase tracking-widest hover:text-blue-500 transition-colors group"
+               className="flex items-center gap-2 font-mono text-xs md:text-sm text-zinc-100 uppercase tracking-widest hover:text-white hover:bg-zinc-800 bg-zinc-900 border border-zinc-700 px-4 py-1.5 rounded-full transition-colors group font-bold"
              >
-               <RotateCcw className="w-2.5 h-2.5 group-hover:rotate-[-45deg] transition-transform" /> Undo
+               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-45deg] transition-transform" /> Undo
              </motion.button>
           )}
         </AnimatePresence>

@@ -13,6 +13,22 @@ export const POLE_MAP: Record<number, number> = {
   10: 324
 };
 
+export const getPoleImageSrc = (pole: number) => {
+  const poleImageMap: Record<number, string> = {
+    1: '1618005182384-a83a8bd57fbe', // abstract colors
+    2: '1493246507139-91e8fad9978e', // energetic/stimulation
+    3: '1518770660439-4636190af475', // hedonism/neon
+    4: '1478760329108-5c3ed9d495a0', // achievement/architecture
+    5: '1557672172-298e090bd0f1', // power/dark waves
+    6: '1462331940025-496dfbfc7564', // security/structure
+    7: '1550684848-fac1c5b4e853', // conformity/grid
+    8: '1558591710-4b4a1ae0f04d', // tradition/earth lines
+    9: '1604871000636-074fa5117945', // benevolence/soft light
+    10: '1550745165-9bc0b252726f' // universalism/celestial
+  };
+  return `https://images.unsplash.com/photo-${poleImageMap[pole] || poleImageMap[1]}?w=600&h=800&fit=crop&q=80`;
+};
+
 export const INITIAL_VALUES: ValueNode[] = [
   {
     id: "aut-01",

@@ -255,7 +255,7 @@ export const Theory: React.FC<TheoryProps> = ({ isOpen, onClose }) => {
                         {activeScholar === 'miller' && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col md:flex-row gap-8">
-                                  <img src="https://static.wixstatic.com/media/2591b9_e3690d3d3a7b4f889b78c9c0b5f10257~mv2.jpg" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="William Miller" />
+                                  <img src="https://raw.githubusercontent.com/calebchanngaihon/Values-Crucible/main/Miller.png" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="William Miller" />
                                   <div className="space-y-3">
                                       <span className="font-mono text-xs text-blue-500 uppercase tracking-widest">[Primary Process Architect]</span>
                                       <h2 className="text-2xl font-bold text-white">William R. Miller</h2>
@@ -292,7 +292,7 @@ export const Theory: React.FC<TheoryProps> = ({ isOpen, onClose }) => {
                         {activeScholar === 'schwartz' && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col md:flex-row gap-8">
-                                  <img src="https://social-psychology.de/do/pt-schwartz.jpg" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="Shalom Schwartz" />
+                                  <img src="https://raw.githubusercontent.com/calebchanngaihon/Values-Crucible/main/Schwartz.png" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="Shalom Schwartz" />
                                   <div className="space-y-3">
                                       <span className="font-mono text-xs text-blue-500 uppercase tracking-widest">[Structural Core Engineer]</span>
                                       <h2 className="text-2xl font-bold text-white">Shalom H. Schwartz</h2>
@@ -333,7 +333,7 @@ export const Theory: React.FC<TheoryProps> = ({ isOpen, onClose }) => {
                         {activeScholar === 'kahneman' && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col md:flex-row gap-8">
-                                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/79/Daniel_Kahneman_at_the_Commonwealth_Club_%282011%29.jpg" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="Daniel Kahneman" />
+                                  <img src="https://raw.githubusercontent.com/calebchanngaihon/Values-Crucible/main/Kahneman.png" className="w-40 h-48 object-cover rounded-xl border border-zinc-700 grayscale" alt="Daniel Kahneman" />
                                   <div className="space-y-3">
                                       <span className="font-mono text-xs text-blue-500 uppercase tracking-widest">[Cognitive Friction Strategist]</span>
                                       <h2 className="text-2xl font-bold text-white">Daniel Kahneman</h2>

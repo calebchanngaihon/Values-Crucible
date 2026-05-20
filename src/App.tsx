@@ -16,7 +16,6 @@ import { Theory } from './components/Theory';
 import { BreathingExercise } from './components/BreathingExercise';
 import { motion, AnimatePresence } from 'motion/react';
 import { Book } from 'lucide-react';
-import { DevTools } from './components/DevTools';
 
 import { TheTempering } from './components/TheTempering';
 
@@ -94,8 +93,8 @@ export default function App() {
             <p className="text-zinc-400 text-sm leading-relaxed mb-12 text-justify md:indent-8">
               This is not a personality quiz. This is a rigorous tool designed to surface your non-negotiable core values. 
               You will move through two critical phases: <strong>The Forge</strong>, 
-              and <strong>The Tempering</strong>) to clarify your values and find alignment with your life plans. 
-              The value of this crucible lies in the difficulty of the choice.
+              and <strong>The Tempering</strong> to clarify your values and find alignment with life. 
+              The value of this crucible lies in the difficulty of the choice.  
             </p>
             <div className="flex flex-col items-center gap-6">
               <button
@@ -118,7 +117,7 @@ export default function App() {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="font-mono text-[10px] text-amber-500/80 uppercase tracking-widest mt-12 font-semibold"
           >
-            Warning: Productive Struggle Required
+            Warning: Productive struggle ahead; Set aside 20mins of deep reflection for this.
           </motion.div>
         </div>
         <Theory isOpen={isTheoryOpen} onClose={() => setIsTheoryOpen(false)} />
@@ -210,7 +209,6 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
       <Theory isOpen={isTheoryOpen} onClose={() => setIsTheoryOpen(false)} />
-      <DevTools __devSetState={__devSetState} />
     </Layout>
   );
 }

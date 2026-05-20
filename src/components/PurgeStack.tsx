@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import { ValueNode } from '../types';
 import { X, Check, Inbox, History, ArrowLeft, RotateCcw } from 'lucide-react';
+import { getPoleImageSrc } from '../constants';
 
 interface PurgeStackProps {
   currentValue: ValueNode;
@@ -87,6 +88,19 @@ export const PurgeStack: React.FC<PurgeStackProps> = ({
     }
     x.set(0);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      if (e.key === 'ArrowLeft') {
+        onSelect(currentValue.id, 'discarded');
+      } else if (e.key === 'ArrowRight') {
+        onSelect(currentValue.id, 'resonated');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentValue.id, onSelect]);
 
   const getPoleName = (pole: number) => {
     const names: Record<number, string> = {
@@ -206,7 +220,7 @@ export const PurgeStack: React.FC<PurgeStackProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col items-center justify-center min-w-0 h-full relative p-4 md:p-8 pt-6 md:pt-20">
         {/* Top Stats Bar - Desktop Only */}
-        <div className="hidden md:flex absolute top-0 left-0 w-full h-16 border-b border-zinc-900 items-center justify-center px-8 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 z-20 bg-zinc-950/50 backdrop-blur-sm">
+        <div className="hidden md:flex absolute top-0 left-0 w-full h-16 border-b border-zinc-900 items-center justify-center px-8 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 z-20 bg-zinc-950/50 backdrop-blur-sm relative">
            <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <span className="text-zinc-100 font-bold">{remainingCount}</span>
@@ -218,6 +232,12 @@ export const PurgeStack: React.FC<PurgeStackProps> = ({
                 <span className="text-zinc-700">Kept</span>
               </div>
            </div>
+           <div className="absolute bottom-0 left-0 h-[1px] bg-blue-500/50 transition-all duration-300" style={{ width: `${(index / total) * 100}%` }} />
+        </div>
+
+        {/* Mobile Progress Bar */}
+        <div className="md:hidden absolute top-0 left-0 w-full h-[2px] bg-zinc-900">
+          <div className="h-full bg-blue-500/50 transition-all duration-300" style={{ width: `${(index / total) * 100}%` }} />
         </div>
 
         <div className="w-full max-w-2xl flex-1 flex flex-col items-center justify-center min-h-0">
@@ -281,8 +301,8 @@ export const PurgeStack: React.FC<PurgeStackProps> = ({
               {/* Card Image Background */}
               <div className="absolute inset-0 z-0 opacity-50">
                  <img 
-                    src={`https://picsum.photos/seed/${currentValue?.id || 'default'}/400/600`}
-                    alt="" 
+                    src={getPoleImageSrc(currentValue?.pole || 1)}
+                    alt={currentValue?.label || ''} 
                     className="w-full h-full object-cover object-center"
                  />
                  {/* Gradient overlay to ensure text readability */}
