@@ -283,6 +283,8 @@ export function useCrucibleState() {
 
   const reset = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('tempering_state');
+    localStorage.removeItem('casting_circle_selected');
     setState({
       stage: Stage.PURGE,
       currentIndex: 0,

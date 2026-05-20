@@ -9,7 +9,22 @@ interface CastingCircleProps {
 }
 
 export const CastingCircle: React.FC<CastingCircleProps> = ({ finalists, onComplete }) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('casting_circle_selected');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved casting selections', e);
+      }
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('casting_circle_selected', JSON.stringify(selectedIds));
+  }, [selectedIds]);
+
   const [hoveredValue, setHoveredValue] = useState<ValueNode | null>(null);
   const [isSealing, setIsSealing] = useState(false);
   const [radius, setRadius] = useState(240);

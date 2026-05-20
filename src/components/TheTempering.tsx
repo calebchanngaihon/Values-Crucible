@@ -15,7 +15,19 @@ interface TheTemperingProps {
 type TemperingStage = 'STAGE_01_HONING' | 'STAGE_02_ANVIL' | 'STAGE_03_QUENCHING' | 'MANIFESTO_SEALED';
 
 export const TheTempering: React.FC<TheTemperingProps> = ({ coreValues, allValues, onSubStageChange }) => {
-  const [stage, setStage] = useState<TemperingStage>('STAGE_01_HONING');
+  const [initialData] = useState(() => {
+    const saved = localStorage.getItem('tempering_state');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved tempering state', e);
+      }
+    }
+    return {};
+  });
+
+  const [stage, setStage] = useState<TemperingStage>(initialData.stage || 'STAGE_01_HONING');
   
   useEffect(() => {
     if (onSubStageChange) {
@@ -26,34 +38,90 @@ export const TheTempering: React.FC<TheTemperingProps> = ({ coreValues, allValue
   }, [stage, onSubStageChange]);
   
   // STATE FOR 01: Honing
-  const [honingIndex, setHoningIndex] = useState(0); // Which of the 3 values
-  const [iteration, setIteration] = useState(1);
-  const [userInput, setUserInput] = useState('');
-  const [honingPayload, setHoningPayload] = useState<any>(null);
-  const [honingStatus, setHoningStatus] = useState<'idle' | 'processing' | 'needs_refinement' | 'completed'>('idle');
-  const [hardenedDefinitions, setHardenedDefinitions] = useState<Record<string, string>>({});
-  const [honingHistory, setHoningHistory] = useState<{user: string, ai: string | null}[]>([]);
+  const [honingIndex, setHoningIndex] = useState<number>(initialData.honingIndex !== undefined ? initialData.honingIndex : 0);
+  const [iteration, setIteration] = useState<number>(initialData.iteration !== undefined ? initialData.iteration : 1);
+  const [userInput, setUserInput] = useState<string>(initialData.userInput !== undefined ? initialData.userInput : '');
+  const [honingPayload, setHoningPayload] = useState<any>(initialData.honingPayload !== undefined ? initialData.honingPayload : null);
+  const [honingStatus, setHoningStatus] = useState<'idle' | 'processing' | 'needs_refinement' | 'completed'>(initialData.honingStatus !== undefined ? initialData.honingStatus : 'idle');
+  const [hardenedDefinitions, setHardenedDefinitions] = useState<Record<string, string>>(initialData.hardenedDefinitions !== undefined ? initialData.hardenedDefinitions : {});
+  const [honingHistory, setHoningHistory] = useState<{user: string, ai: string | null}[]>(initialData.honingHistory !== undefined ? initialData.honingHistory : []);
 
   // STATE FOR 02: Anvil
-  const [anvilStep, setAnvilStep] = useState<'generate' | 'respond' | 'evaluate' | 'completed' | 'rejected'>('generate');
-  const [anvilValA, setAnvilValA] = useState(coreValues[0]?.label || '');
-  const [anvilValB, setAnvilValB] = useState(coreValues[1]?.label || '');
-  const [anvilHistory, setAnvilHistory] = useState<{user: string, ai: string | null}[]>([]);
-  const [dilemma, setDilemma] = useState('');
-  const [anvilInput, setAnvilInput] = useState('');
-  const [anvilPayload, setAnvilPayload] = useState<any>(null);
-  const [operationalRule, setOperationalRule] = useState('');
+  const [anvilStep, setAnvilStep] = useState<'generate' | 'respond' | 'evaluate' | 'completed' | 'rejected'>(initialData.anvilStep !== undefined ? initialData.anvilStep : 'generate');
+  const [anvilValA, setAnvilValA] = useState<string>(initialData.anvilValA !== undefined ? initialData.anvilValA : (coreValues[0]?.label || ''));
+  const [anvilValB, setAnvilValB] = useState<string>(initialData.anvilValB !== undefined ? initialData.anvilValB : (coreValues[1]?.label || ''));
+  const [anvilHistory, setAnvilHistory] = useState<{user: string, ai: string | null}[]>(initialData.anvilHistory !== undefined ? initialData.anvilHistory : []);
+  const [dilemma, setDilemma] = useState<string>(initialData.dilemma !== undefined ? initialData.dilemma : '');
+  const [anvilInput, setAnvilInput] = useState<string>(initialData.anvilInput !== undefined ? initialData.anvilInput : '');
+  const [anvilPayload, setAnvilPayload] = useState<any>(initialData.anvilPayload !== undefined ? initialData.anvilPayload : null);
+  const [operationalRule, setOperationalRule] = useState<string>(initialData.operationalRule !== undefined ? initialData.operationalRule : '');
 
   // STATE FOR 03: Quenching
-  const [quenchingStep, setQuenchingStep] = useState<'prompt' | 'respond' | 'evaluate' | 'completed' | 'rejected'>('respond');
-  const [quenchingHistory, setQuenchingHistory] = useState<{user: string, ai: string | null}[]>([]);
-  const [quenchingInput, setQuenchingInput] = useState('');
-  const [quenchingPrompt, setQuenchingPrompt] = useState('');
-  const [quenchingPayload, setQuenchingPayload] = useState<any>(null);
-  const [manifesto, setManifesto] = useState('');
+  const [quenchingStep, setQuenchingStep] = useState<'prompt' | 'respond' | 'evaluate' | 'completed' | 'rejected'>(initialData.quenchingStep !== undefined ? initialData.quenchingStep : 'respond');
+  const [quenchingHistory, setQuenchingHistory] = useState<{user: string, ai: string | null}[]>(initialData.quenchingHistory !== undefined ? initialData.quenchingHistory : []);
+  const [quenchingInput, setQuenchingInput] = useState<string>(initialData.quenchingInput !== undefined ? initialData.quenchingInput : '');
+  const [quenchingPrompt, setQuenchingPrompt] = useState<string>(initialData.quenchingPrompt !== undefined ? initialData.quenchingPrompt : '');
+  const [quenchingPayload, setQuenchingPayload] = useState<any>(initialData.quenchingPayload !== undefined ? initialData.quenchingPayload : null);
+  const [manifesto, setManifesto] = useState<string>(initialData.manifesto !== undefined ? initialData.manifesto : '');
   const [sealProgress, setSealProgress] = useState(0);
-  const [quenchingAssignments, setQuenchingAssignments] = useState({drive: '', base: '', flow: ''});
-  const [showGuide, setShowGuide] = useState(false);
+  const [quenchingAssignments, setQuenchingAssignments] = useState(initialData.quenchingAssignments !== undefined ? initialData.quenchingAssignments : {drive: '', base: '', flow: ''});
+  const [showGuide, setShowGuide] = useState<boolean>(initialData.showGuide !== undefined ? initialData.showGuide : false);
+
+  // Auto-Save Effect
+  useEffect(() => {
+    const dataToSave = {
+      stage,
+      honingIndex,
+      iteration,
+      userInput,
+      honingPayload,
+      honingStatus,
+      hardenedDefinitions,
+      honingHistory,
+      anvilStep,
+      anvilValA,
+      anvilValB,
+      anvilHistory,
+      dilemma,
+      anvilInput,
+      anvilPayload,
+      operationalRule,
+      quenchingStep,
+      quenchingHistory,
+      quenchingInput,
+      quenchingPrompt,
+      quenchingPayload,
+      manifesto,
+      quenchingAssignments,
+      showGuide
+    };
+    localStorage.setItem('tempering_state', JSON.stringify(dataToSave));
+  }, [
+    stage,
+    honingIndex,
+    iteration,
+    userInput,
+    honingPayload,
+    honingStatus,
+    hardenedDefinitions,
+    honingHistory,
+    anvilStep,
+    anvilValA,
+    anvilValB,
+    anvilHistory,
+    dilemma,
+    anvilInput,
+    anvilPayload,
+    operationalRule,
+    quenchingStep,
+    quenchingHistory,
+    quenchingInput,
+    quenchingPrompt,
+    quenchingPayload,
+    manifesto,
+    quenchingAssignments,
+    showGuide
+  ]);
 
   useEffect(() => {
     const fn_jump = ((e: CustomEvent) => {
@@ -74,6 +142,7 @@ export const TheTempering: React.FC<TheTemperingProps> = ({ coreValues, allValue
     }) as EventListener;
 
     const fn_reset = () => {
+      localStorage.removeItem('tempering_state');
       setStage(current => {
         if (current === 'STAGE_01_HONING') {
           setHoningIndex(0);
