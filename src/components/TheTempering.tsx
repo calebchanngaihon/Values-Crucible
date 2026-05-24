@@ -277,6 +277,7 @@ export const TheTempering: React.FC<TheTemperingProps> = ({ coreValues, allValue
       userResponse: anvilInput,
       history: anvilHistory.map((h, i) => `User: ${h.user}\nAI: ${h.ai || ''}`).join('\n')
     });
+    setAnvilInput('');
   };
 
   const handleAnvilEvaluateTypingComplete = (text: string) => {
@@ -765,9 +766,9 @@ Explanation: ${quenchingInput}`;
 
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 mt-4">
                            {[
-                             { id: 'drive', title: 'The Drive', label: 'The Forward Momentum', desc: 'What gives you the energy to start?', placeholder: 'e.g., I lead with Curiosity to discover new ways of working...' },
-                             { id: 'base', title: 'The Base', label: 'The Immovable Anchor Point', desc: 'What is the one thing you refuse to lose?', placeholder: '...but I never compromise my Autonomy by letting others dictate my schedule...' },
-                             { id: 'flow', title: 'The Flow', label: 'The Regulation of the Process', desc: 'What makes this sustainable for you?', placeholder: '...and I use Creativity to find unique ways to keep my work interesting and avoid burnout.' }
+                             { id: 'drive', title: 'The Drive', desc: 'What gives you the energy to start?', placeholder: 'e.g., I lead with Curiosity to discover new ways of working...' },
+                             { id: 'base', title: 'The Base', desc: 'What is the one thing you refuse to lose?', placeholder: '...but I never compromise my Autonomy by letting others dictate my schedule...' },
+                             { id: 'flow', title: 'The Flow', desc: 'What makes this sustainable for you?', placeholder: '...and I use Creativity to find unique ways to keep my work interesting and avoid burnout.' }
                            ].map(role => {
                              const assignedValue = quenchingAssignments[role.id as keyof typeof quenchingAssignments];
                              return (
@@ -795,7 +796,7 @@ Explanation: ${quenchingInput}`;
                                 <div>
                                   <div className="flex items-center gap-2 mb-1">
                                      <span className={`font-mono text-xs font-bold uppercase block ${assignedValue ? 'text-zinc-200' : 'text-zinc-500'}`}>{role.title}</span>
-                                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 uppercase tracking-widest">{role.label}</span>
+
                                   </div>
                                   <span className="text-zinc-400 text-[10px] uppercase tracking-widest block mb-3 leading-relaxed">{role.desc}</span>
                                   {!assignedValue && <span className="text-zinc-600/70 text-[10px] italic leading-relaxed block">{role.placeholder}</span>}

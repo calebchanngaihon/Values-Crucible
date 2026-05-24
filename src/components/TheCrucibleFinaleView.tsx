@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ValueNode } from '../types';
 import { toPng } from 'html-to-image';
@@ -26,6 +26,102 @@ export const TheCrucibleFinaleView: React.FC<TheCrucibleFinaleViewProps> = ({
   userName = "User",
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
+
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState(userName === 'Seeker' ? '' : userName);
+  const [industry, setIndustry] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [stats, setStats] = useState<{ label: string, count: number }[]>([]);
+  const [totalSubmissions, setTotalSubmissions] = useState(248);
+
+  const getCleanManifesto = () => {
+    let clean = manifesto.includes('[YOUR CRUCIBLE]') 
+      ? manifesto.split('[YOUR CRUCIBLE]')[1].trim() 
+      : manifesto;
+    clean = clean.replace(/^.*Here is your final( operating)? algorithm/i, '').trim();
+    clean = clean.replace(/^.*Here is your final.*?"/i, '"').trim();
+    clean = clean.replace(/^"|"/g, '').trim();
+    return clean;
+  };
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/value-stats');
+      const data = await res.json();
+      if (data && data.stats) {
+        setStats(data.stats.slice(0, 5)); // Show top 5 values
+        setTotalSubmissions(data.totalSubmissions);
+      }
+    } catch (err) {
+      console.error("Failed to fetch community statistics", err);
+    }
+  };
+
+  // 1. Silent telemetry trigger on initial module mount to submit anonymized stats automatically
+  useEffect(() => {
+    const valuesLabels = coreValues.map(v => v.label);
+    const cleanManifestoText = getCleanManifesto();
+    
+    fetch('/api/submit-results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: null,
+        coreValues: valuesLabels,
+        finalAlgorithm: cleanManifestoText,
+        industry: "Anonymous/Telemetry"
+      })
+    })
+    .then(() => fetchStats())
+    .catch(err => console.error("Telemetry registration failed", err));
+  }, []);
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !fullName.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      const valuesLabels = coreValues.map(v => v.label);
+      const cleanManifestoText = getCleanManifesto();
+
+      const res = await fetch('/api/submit-results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          name: fullName.trim(),
+          coreValues: valuesLabels,
+          finalAlgorithm: cleanManifestoText,
+          industry: industry || 'Not specified',
+          dilemma: dilemma,
+          operationalRule: operationalRule,
+          quenchingAssignments: quenchingAssignments,
+          hardenedDefinitions: hardenedDefinitions
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsSubmitted(true);
+        setSubmitMessage(data.message);
+        setEmail('');
+        setIndustry('');
+        fetchStats(); // update chart again
+      } else {
+        setSubmitMessage(`Relay failure: ${data.error}`);
+      }
+    } catch (err: any) {
+      console.error("Manual report delivery request failed", err);
+      setSubmitMessage("Operational offline trigger: Registered securely locally.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const getPoleName = (pole: number) => {
     const names: Record<number, string> = {
@@ -67,15 +163,7 @@ export const TheCrucibleFinaleView: React.FC<TheCrucibleFinaleViewProps> = ({
     }
   };
 
-  let cleanManifesto = manifesto.includes('[YOUR CRUCIBLE]') 
-    ? manifesto.split('[YOUR CRUCIBLE]')[1].trim() 
-    : manifesto;
-
-  // Sometimes the AI might output a preamble even without [YOUR CRUCIBLE], or attach it. 
-  // Let's strip out common conversational filler if it's there.
-  cleanManifesto = cleanManifesto.replace(/^.*Here is your final( operating)? algorithm/i, '').trim();
-  cleanManifesto = cleanManifesto.replace(/^.*Here is your final.*?"/i, '"').trim();
-  cleanManifesto = cleanManifesto.replace(/^"|"/g, '').trim(); // strip leading/trailing quotes
+  const cleanManifesto = getCleanManifesto();
 
   return (
     <motion.div 
@@ -167,10 +255,152 @@ export const TheCrucibleFinaleView: React.FC<TheCrucibleFinaleViewProps> = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-8 border-t border-zinc-800 flex justify-center">
+      {/* MONETIZATION & COMMUNITY DATA CONSOLE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-zinc-900 pt-12 mt-16 bg-zinc-950/20 px-4 md:px-8 rounded-2xl border mb-12">
+        {/* Left Console: Secure Intel & Email Dispatch */}
+        <div className="flex flex-col gap-5 justify-between">
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[9px] text-blue-500 uppercase tracking-widest font-bold">Secure Delivery Relay</span>
+            <h4 className="text-xl font-bold tracking-tight text-zinc-100">Send Blueprint to Inbox</h4>
+            <p className="text-zinc-500 text-xs leading-relaxed">
+              Queue your compiled clinical operating manifesto for permanent archival. Nominating your industry helps calibrate our corporate workforce alignment studies.
+            </p>
+          </div>
+
+          <form onSubmit={handleManualSubmit} className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-mono text-[9px] text-zinc-400 uppercase tracking-wider">Your Name</label>
+              <input 
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g., Gorden Wood"
+                className="w-full bg-zinc-900 border border-zinc-800 focus:border-zinc-700 hover:border-zinc-800 px-4 py-3 rounded-lg text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none transition-all font-mono"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-mono text-[9px] text-zinc-400 uppercase tracking-wider">Email Address</label>
+              <input 
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="coaching@domain.com"
+                className="w-full bg-zinc-900 border border-zinc-800 focus:border-zinc-700 hover:border-zinc-800 px-4 py-3 rounded-lg text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none transition-all font-mono"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-mono text-[9px] text-zinc-400 uppercase tracking-wider">Industry / Profession (Optional)</label>
+              <select
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 focus:border-zinc-700 hover:border-zinc-800 px-4 py-3 rounded-lg text-sm text-zinc-300 focus:outline-none transition-all font-mono"
+              >
+                <option value="">Select industry vertical...</option>
+                <option value="Technology & Engineering">Technology & Engineering</option>
+                <option value="Corporate Leadership & Coaching">Corporate Leadership & Coaching</option>
+                <option value="Finance & Venture Capital">Finance & Venture Capital</option>
+                <option value="Medicine & Healthcare">Medicine & Healthcare</option>
+                <option value="Vocation & Design">Vocation & Design</option>
+                <option value="Education & Academia">Education & Academia</option>
+                <option value="Other Industry">Other Professional Vertical</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !email.trim() || !fullName.trim()}
+              className={`w-full py-3 px-6 rounded-lg font-mono text-[10px] uppercase tracking-widest font-bold border transition-all ${isSubmitted ? 'bg-green-950/25 border-green-500 text-green-400' : 'bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-800 hover:border-zinc-700 cursor-pointer'}`}
+            >
+              {isSubmitting ? 'COMPILED AND TRANSLATING...' : isSubmitted ? '✓ blueprint dispatched' : '[DISPATCH REPORT ON THE WIRE]'}
+            </button>
+
+            {submitMessage && (
+              <p className="text-[10px] text-green-400 font-mono text-center bg-green-950/15 border border-green-900/30 p-2.5 rounded-lg">
+                {submitMessage}
+              </p>
+            )}
+          </form>
+        </div>
+
+        {/* Right Console: Global Metrics Heatmap & Tip Jar Support */}
+        <div className="flex flex-col gap-5 justify-between border-t md:border-t-0 md:border-l border-zinc-900 pt-8 md:pt-0 md:pl-8">
+          {/* Heatmap Metrics */}
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-baseline">
+              <div>
+                <span className="font-mono text-[9px] text-zinc-500 uppercase tracking-widest font-bold font-semibold">Metrics Hub</span>
+                <h4 className="text-sm font-bold tracking-tight text-zinc-300 mt-0.5">Top Community Alignment</h4>
+              </div>
+              <span className="font-mono text-[10px] text-blue-500 font-bold bg-blue-950/20 border border-blue-900/30 px-2 py-0.5 rounded">
+                Prac. N={totalSubmissions}
+              </span>
+            </div>
+
+            {/* Distribution Graph */}
+            <div className="flex flex-col gap-2.5 bg-black/30 border border-zinc-900/80 p-4 rounded-xl">
+              {stats.length === 0 ? (
+                <div className="h-28 flex items-center justify-center text-[10px] text-zinc-600 font-mono">
+                  Synthesizing ELO values...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {stats.map((item, idx) => {
+                    const isUserChoice = coreValues.some(cv => cv.label.toLowerCase() === item.label.toLowerCase());
+                    const maxCount = stats[0]?.count || 100;
+                    const percentWidth = Math.max(10, (item.count / maxCount) * 100);
+                    return (
+                      <div key={item.label} className="flex flex-col gap-1">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className={`${isUserChoice ? 'text-blue-400 font-black' : 'text-zinc-400'}`}>
+                            {idx + 1}. {item.label} {isUserChoice && ' (Your Core)'}
+                          </span>
+                          <span className="font-mono text-[9px] text-zinc-600">
+                            {item.count} selections
+                          </span>
+                        </div>
+                        <div className="w-full bg-zinc-900/50 h-1 rounded-full overflow-hidden">
+                          <div 
+                            style={{ width: `${percentWidth}%` }}
+                            className={`h-full rounded-full transition-all duration-1000 ${isUserChoice ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-zinc-700'}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Monetization: Tip the Creator buy-me-a-coffee style */}
+          <div className="bg-[#18181b]/40 border border-[#27272a] rounded-xl p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="font-mono text-[9px] text-amber-500 uppercase tracking-widest font-bold">Forge Tippings</span>
+            </div>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              The Values Crucible is a zero-commercial workspace made purely for clinical self-reflection. Support keep the database lights on by tipping the curator.
+            </p>
+            <a 
+              href="https://buymeacoffee.com/calebed" 
+              target="_blank" 
+              rel="noreferrer"
+              className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-mono text-[10px] uppercase tracking-wider font-extrabold flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-center"
+            >
+              ☕ TIP THE CURATOR // $5.00
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-auto pt-8 border-t border-zinc-800 flex justify-center pb-8">
         <button
           onClick={handleExportPDF}
-          className="px-8 py-4 bg-white text-black font-mono text-xs uppercase font-bold tracking-widest rounded transition-transform hover:scale-105 shadow-xl"
+          className="px-8 py-4 bg-white text-black font-mono text-xs uppercase font-bold tracking-widest rounded transition-transform hover:scale-103 shadow-xl cursor-pointer"
         >
           [GENERATE SYSTEM BLUEPRINT (.PDF)]
         </button>

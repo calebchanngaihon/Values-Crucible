@@ -148,7 +148,7 @@ export const Theory: React.FC<TheoryProps> = ({ isOpen, onClose }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex bg-zinc-950/95 backdrop-blur-md"
+          className="fixed inset-0 z-[9999] flex bg-zinc-950/95 backdrop-blur-md"
         >
           {/* Main Navigation Sidebar */}
           <aside className="w-[320px] bg-zinc-950 border-r border-zinc-800 flex-col justify-between p-8 shrink-0 hidden md:flex">
@@ -220,13 +220,13 @@ export const Theory: React.FC<TheoryProps> = ({ isOpen, onClose }) => {
           {/* Close Button Desktop */}
           <button
             onClick={onClose}
-            className="absolute top-8 right-8 z-[200] w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 transition-all hidden md:flex"
+            className="absolute top-12 right-12 z-[10000] w-12 h-12 bg-zinc-900/90 border border-zinc-700 hover:border-zinc-500 rounded-full flex items-center justify-center text-zinc-300 hover:text-white transition-all shadow-2xl hidden md:flex"
           >
             <X className="w-6 h-6" />
           </button>
 
           {/* Main Content Area */}
-          <main className="flex-grow p-8 md:p-16 overflow-y-auto bg-zinc-950 mt-24 md:mt-0">
+          <main className="flex-grow p-8 md:pt-40 md:pb-24 md:px-20 overflow-y-auto bg-zinc-950 mt-24 md:mt-0">
             <div className="max-w-4xl mx-auto">
               <AnimatePresence mode="wait">
                 
