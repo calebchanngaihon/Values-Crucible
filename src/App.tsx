@@ -39,8 +39,31 @@ export default function App() {
 
   const [isTheoryOpen, setIsTheoryOpen] = React.useState(false);
   const [temperingTitle, setTemperingTitle] = React.useState('Tempering - Honing');
+  const [showDevTools, setShowDevTools] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('dev') === 'true' || localStorage.getItem('__dev_mode') === 'true';
+    }
+    return false;
+  });
 
-  const devToolsComponent = (
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Secret combination: Ctrl + Shift + D toggles the QA Center
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+        setShowDevTools((prev) => {
+          const next = !prev;
+          localStorage.setItem('__dev_mode', next ? 'true' : 'false');
+          return next;
+        });
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const devToolsComponent = showDevTools ? (
     <DevTools 
       __devSetState={__devSetState}
       state={state}
@@ -53,7 +76,7 @@ export default function App() {
       startTempering={startTempering}
       reset={reset}
     />
-  );
+  ) : null;
 
   const handleGlobalReset = () => {
     reset();
